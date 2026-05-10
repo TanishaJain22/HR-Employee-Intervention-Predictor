@@ -65,7 +65,7 @@ def engineer_features(df):
 
 @st.cache_resource
 def train_predictive_engine():
-    # 1. Load Local Environment Datasets
+    # 1. Utilize Bundled Environment Training Dataset
     train_df = pd.read_csv('train_hr_data.csv')
     
     # Build the statistical baseline row for input fills
@@ -131,12 +131,24 @@ def train_predictive_engine():
 st.markdown('<div class="header-style">HR Employee Flight Risk Prediction</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header-style">AI-powered system translating demographic signals into actionable retention intervention targets.</div>', unsafe_allow_html=True)
 
+# ------------------------------------------------------------------------------
+# DATA ACQUISITION LAYER
+# ------------------------------------------------------------------------------
+st.sidebar.header("📂 Data Acquisition")
+uploaded_file = st.sidebar.file_uploader("Upload Employee Dataset", type=["csv"], help="CSV file containing employee demographics for diagnostic analysis.")
+
+# Load frames with native fallbacks to core directory assets
+if uploaded_file is not None:
+    validate_raw = pd.read_csv(uploaded_file)
+    st.sidebar.success("✅ Analysis Dataset Loaded.")
+else:
+    validate_raw = pd.read_csv('validate_hr_data.csv')
+
 # Initialize model and fetch parameters via cache
 with st.spinner("Initializing Synthetic AI Engine (Training model in-memory)..."):
     model, processor, num_cols, cat_cols, baseline, categories = train_predictive_engine()
 
 # Load Validation Dataset for scoring
-validate_raw = pd.read_csv('validate_hr_data.csv')
 validate_eng = engineer_features(validate_raw)
 
 # Scoring Run
