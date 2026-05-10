@@ -72,7 +72,7 @@ def train_predictive_engine():
     baseline_row = train_df.copy()
     # Map modes for strings, medians for numeric
     for col in baseline_row.columns:
-        if baseline_row[col].dtype == 'object':
+        if baseline_row[col].dtype in ['object', 'string']:
             baseline_row[col] = baseline_row[col].mode()[0]
         else:
             baseline_row[col] = baseline_row[col].median()
