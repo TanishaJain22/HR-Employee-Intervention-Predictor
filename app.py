@@ -148,11 +148,25 @@ else:
 with st.spinner("Initializing Synthetic AI Engine (Training model in-memory)..."):
     model, processor, num_cols, cat_cols, baseline, categories = train_predictive_engine()
 
-# Load Validation Dataset for scoring
+# Data Alignment & Resiliency Layer:
+# 1. Patch critical row identifiers with synthetic sequence if totally absent
+if 'EmployeeNumber' not in validate_raw.columns:
+    validate_raw['EmployeeNumber'] = [f"UNQ-{i+1000}" for i in range(len(validate_raw))]
+
+# 2. Forward-fill missing raw attributes using training baseline modes/medians to prevent logical failures
+for col in baseline.columns:
+    if col not in validate_raw.columns:
+        validate_raw[col] = baseline[col].values[0]
+
+# 3. Compute localized feature intelligence
 validate_eng = engineer_features(validate_raw)
 
-# Scoring Run
+# 4. Isolate analysis pool and strictly lock to fitted vector taxonomy order
 X_val = validate_eng.drop(columns=['Attrition', 'EmployeeNumber'], errors='ignore')
+ordered_features = num_cols + cat_cols
+X_val = X_val.reindex(columns=ordered_features)
+
+# Robust pipeline transformation
 X_val_p = processor.transform(X_val)
 
 probs = model.predict_proba(X_val_p)[:, 1]
